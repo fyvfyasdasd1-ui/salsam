@@ -1,0 +1,22 @@
+# Build output
+bin/
+build/
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.iobj
+*.ipdb
+*.log
+*.tlog
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.opensdf
+*.sdf
+
+# ScriptHookV SDK (don't commit Alexander Blade's redistributable files)
+include/inc/
+lib/*.lib
