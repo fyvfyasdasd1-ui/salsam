@@ -1,0 +1,153 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  background-size: 200% 200%;
+  animation: gradientShift 15s ease infinite;
+  padding: 20px;
+}
+
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.calculator {
+  width: 100%;
+  max-width: 360px;
+  background: rgba(20, 20, 35, 0.6);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 28px;
+  padding: 24px;
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.display {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 18px;
+  padding: 22px 20px;
+  margin-bottom: 20px;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: right;
+  overflow: hidden;
+}
+
+.history {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 18px;
+  min-height: 22px;
+  font-weight: 300;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.current {
+  color: #ffffff;
+  font-size: 46px;
+  font-weight: 300;
+  letter-spacing: 1px;
+  margin-top: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.key {
+  border: none;
+  outline: none;
+  cursor: pointer;
+  font-size: 22px;
+  font-weight: 500;
+  height: 64px;
+  border-radius: 18px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: transform 0.08s ease, background 0.2s ease, box-shadow 0.2s ease;
+  font-family: inherit;
+}
+
+.key:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.key:active {
+  transform: scale(0.94);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.15) inset;
+}
+
+.key-fn {
+  background: rgba(255, 255, 255, 0.22);
+  color: #1c1c2e;
+  font-weight: 600;
+}
+
+.key-fn:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+.key-op {
+  background: linear-gradient(135deg, #ff9a3c 0%, #ff6b6b 100%);
+  font-size: 26px;
+  box-shadow: 0 6px 18px rgba(255, 107, 107, 0.3);
+}
+
+.key-op:hover {
+  filter: brightness(1.1);
+}
+
+.key-op.active {
+  background: #ffffff;
+  color: #ff6b6b;
+}
+
+.key-eq {
+  background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  color: #0f3a2e;
+  font-size: 26px;
+  font-weight: 700;
+  box-shadow: 0 6px 18px rgba(67, 233, 123, 0.35);
+}
+
+.key-eq:hover {
+  filter: brightness(1.05);
+}
+
+.key-zero {
+  grid-column: span 1;
+}
+
+@media (max-width: 380px) {
+  .calculator { padding: 18px; border-radius: 22px; }
+  .key { height: 58px; font-size: 20px; }
+  .current { font-size: 38px; }
+}
