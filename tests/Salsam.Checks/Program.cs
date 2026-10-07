@@ -34,6 +34,8 @@ try
     Throws(() => FrameReport.Parse("FrameTimeMs\n10"), "reject insufficient sample");
     Throws(() => FrameReport.Parse("FPS\n100"), "reject unsupported measurement column");
     Check(new ChangeJournal(directory).Read().Count == 4, "journal survives reopening");
+    passed += ProfileChecks.Run();
+    passed += BenchmarkChecks.Run();
     Console.WriteLine($"{passed} checks passed.");
 }
 finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }

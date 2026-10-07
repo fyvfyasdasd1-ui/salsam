@@ -22,6 +22,7 @@ public record RegistryValue(string Text, int Kind);
 
 public sealed class WindowsBackend : ISettingBackend
 {
+    [DllImport("kernel32.dll")] private static extern uint GetOEMCP();
     public const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
     public static readonly string Data = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Salsam");
     public static string Run(string executable, params string[] args)
@@ -33,7 +34,7 @@ public sealed class WindowsBackend : ISettingBackend
             : executable.Equals("powercfg.exe", StringComparison.OrdinalIgnoreCase)
                 ? Path.Combine(Environment.SystemDirectory, "powercfg.exe")
                 : throw new NotSupportedException("Неизвестная системная утилита.");
-        var encoding = powershell ? Encoding.UTF8 : Encoding.GetEncoding(System.Globalization.CultureInfo.CurrentCulture.TextInfo.OEMCodePage);
+        var encoding = powershell ? Encoding.UTF8 : Encoding.GetEncoding(checked((int)GetOEMCP()));
         var info = new ProcessStartInfo(systemExecutable) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true,
             StandardOutputEncoding = encoding, StandardErrorEncoding = encoding };
         foreach (var arg in args) info.ArgumentList.Add(arg);
@@ -50,7 +51,13 @@ public sealed class WindowsBackend : ISettingBackend
         .Where(match => match.Success).Select(match => new PowerPlan(match.Groups[1].Value.ToLowerInvariant(), match.Groups[2].Value)).ToList();
     public string Read(string kind, string target)
     {
-        if (kind == "power") return Regex.Match(Run("powercfg.exe", "/getactivescheme"), @"[a-fA-F0-9-]{36}").Value.ToLowerInvariant();
+        if (kind == "visual") return VisualEffectsService.Read(target);
+        if (kind == "power")
+        {
+            var value = Regex.Match(Run("powercfg.exe", "/getactivescheme"), @"[a-fA-F0-9-]{36}").Value;
+            if (!Guid.TryParse(value, out var active)) throw new IOException("Windows не вернула идентификатор активной схемы питания.");
+            return active.ToString();
+        }
         if (kind == "startup")
         {
             using var key = Registry.CurrentUser.OpenSubKey(RunKey);
@@ -74,6 +81,7 @@ public sealed class WindowsBackend : ISettingBackend
     }
     public void Write(string kind, string target, string value)
     {
+        if (kind == "visual") { VisualEffectsService.Write(target, value); return; }
         if (kind == "power")
         {
             if (!Guid.TryParse(value, out _) || !Plans().Any(p => p.Id == value)) throw new InvalidOperationException("Схема питания недоступна.");
