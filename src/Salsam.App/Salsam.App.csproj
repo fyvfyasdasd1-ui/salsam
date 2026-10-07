@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <AssemblyName>Salsam</AssemblyName>
-    <Version>2.0.0</Version>
+    <Version>2.0.1</Version>
     <Description>Настройка Windows с выбором оптимизаций, мониторингом и откатом</Description>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../Salsam.Core/Salsam.Core.csproj" /></ItemGroup>
