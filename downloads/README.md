@@ -1,4 +1,4 @@
-# Salsam 2.0 — portable Windows x64
+# Salsam 2.0.1 — portable Windows x64
 
 Download Salsam.exe and run it on Windows 10/11 x64. No .NET installation or adjacent DLLs are required.
 
@@ -6,4 +6,4 @@ New dashboard, optimization catalog, four documented Windows animation settings,
 
 Release build verified in Linux; 48 Core/profile/CSV checks passed. Native Windows checks and the portable GUI smoke run separately in GitHub Actions; refer to their actual outcome. This executable is unsigned.
 
-SHA256: e8314ef31b00cba4311f2ffe22c0b5e12c0b84f643c03e9660f0515f563fb5f2
+SHA256: 365f0540c25b94ff236918c2b14de5ee1bd51a16329fcf9424e2c30ec4e046e0
