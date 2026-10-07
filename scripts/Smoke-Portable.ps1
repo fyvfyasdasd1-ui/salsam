@@ -40,8 +40,10 @@ function Visible-Name {
 function Get-AppWindows {
     $condition = [System.Windows.Automation.PropertyCondition]::new(
         [System.Windows.Automation.AutomationElement]::ProcessIdProperty, [int] $appProcess.Id)
-    return [System.Windows.Automation.AutomationElement]::RootElement.FindAll(
+    $windows = [System.Windows.Automation.AutomationElement]::RootElement.FindAll(
         [System.Windows.Automation.TreeScope]::Children, $condition)
+    # Keep the empty collection intact instead of turning it into $null.
+    return ,$windows
 }
 
 function Assert-NoErrorWindow {
@@ -65,8 +67,13 @@ function Assert-VisibleContentText {
     param([System.Windows.Automation.AutomationElement] $Root, [string] $Expected)
     $condition = [System.Windows.Automation.PropertyCondition]::new(
         [System.Windows.Automation.AutomationElement]::NameProperty, $Expected)
-    $element = $Root.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
-    if ((Visible-Name $element) -ne $Expected) { throw "Visible content text is missing: '$Expected'." }
+    # Collapsed sections can remain in the raw UIA tree and share text labels.
+    # Require an exact, visible match within the real main content area.
+    $elements = $Root.FindAll([System.Windows.Automation.TreeScope]::Descendants, $condition)
+    foreach ($element in $elements) {
+        if ((Visible-Name $element) -eq $Expected) { return }
+    }
+    throw "Visible content text is missing: '$Expected'."
 }
 
 function Assert-Text {
