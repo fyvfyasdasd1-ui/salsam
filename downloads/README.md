@@ -1,9 +1,9 @@
-# Salsam 2.0.1 — portable Windows x64
+# Salsam 2.1.0 — Windows 10/11 x64
 
-Download Salsam.exe and run it on Windows 10/11 x64. No .NET installation or adjacent DLLs are required.
+Скачайте Salsam.exe и запустите двойным щелчком. Установка .NET и DLL рядом с программой не нужны.
 
-New dashboard, optimization catalog, four documented Windows animation settings, saved user profile, real CPU/RAM and available GPU/disk counters. Changes are applied only after confirmation and have recovery records.
+37 настроек интерфейса, мыши, клавиатуры, Проводника и питания. Поиск, раскрываемые описания и последствия, фактические состояния Windows, профили и очередь изменений. Уже установленные значения пропускаются без повторной записи. Каждое применённое изменение проверяется и сохраняет данные для отдельного отката.
 
-Release build verified in Linux; 48 Core/profile/CSV checks passed. Native settings/recovery checks and the portable GUI smoke passed on the Windows runner: https://github.com/fyvfyasdasd1-ui/salsam/actions/runs/37693352068 . This executable is unsigned.
+97 проверок ядра прошли; автономная сборка проверена. Проверки реальных системных настроек, отката, повторного применения без записи, запуска EXE и видимых статусов прошли на Windows: https://github.com/fyvfyasdasd1-ui/salsam/actions/runs/37737908780 . Файл не подписан цифровой подписью.
 
-SHA256: 365f0540c25b94ff236918c2b14de5ee1bd51a16329fcf9424e2c30ec4e046e0
+SHA256: 5f03b1effc6a4d2476d0bf18e4842ae8316b4e606cad192ce88ff286958189b4
