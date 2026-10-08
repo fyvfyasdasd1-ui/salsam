@@ -140,7 +140,7 @@
               <Button Grid.Column="1" Content="Выбранные → в очередь" Command="{Binding QueueSelectedCommand}" Style="{StaticResource TweakPrimaryButton}" Padding="11,8"/>
             </Grid>
             <Border Background="#152137" BorderBrush="#293D5A" BorderThickness="1" CornerRadius="9" Padding="20" Margin="0,0,0,12"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding FilteredCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><TextBlock Text="Совпадений не найдено. Измените поиск или выберите другую категорию." FontSize="12" Foreground="#8FA8C9"/></Border>
-            <ItemsControl ItemsSource="{Binding FilteredOptimizations}" AutomationProperties.AutomationId="TweakCatalog">
+            <local:TweakItemsControl ItemsSource="{Binding FilteredOptimizations}" AutomationProperties.AutomationId="TweakCatalog">
               <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><DataTrigger Binding="{Binding Busy}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></ItemsControl.Style>
               <ItemsControl.ItemTemplate><DataTemplate>
                 <Border Style="{StaticResource TweakRow}">
@@ -172,7 +172,7 @@
                   </Grid>
                 </Border>
               </DataTemplate></ItemsControl.ItemTemplate>
-            </ItemsControl>
+            </local:TweakItemsControl>
             <Border Style="{StaticResource Card}" Background="#111E31" BorderBrush="#29405D" Padding="15" Margin="0,10,0,16"><StackPanel><TextBlock Text="Возврат к исходным значениям" FontSize="13" FontWeight="SemiBold" Foreground="#B5C9E4"/><TextBlock Text="Используются исходные значения из журнала Salsam. Перед восстановлением появится подтверждение." FontSize="11" Foreground="#7E9ABA" LineHeight="18" Margin="0,7,0,11"/><Button Content="Восстановить исходные значения" Command="{Binding DefaultTweaksCommand}" Style="{StaticResource TweakButton}" HorizontalAlignment="Left"/></StackPanel></Border>
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Выбрать схему питания" Style="{StaticResource CardTitle}"/><TextBlock Text="{Binding ActivePower}" Foreground="#BCA9F5" FontWeight="SemiBold" Margin="0,0,0,12"/>
               <ComboBox ItemsSource="{Binding Plans}" SelectedItem="{Binding SelectedPlan, Mode=TwoWay}" ToolTip="Существующие схемы питания Windows" AutomationProperties.Name="Схема питания"/>

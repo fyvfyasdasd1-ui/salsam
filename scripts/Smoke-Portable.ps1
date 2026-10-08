@@ -112,25 +112,28 @@ function Assert-NativeTweakState {
     )
     function Get-FailureCatalogDiagnostic {
         # Called only on failure. Inspect this application's catalog, never the
-        # desktop or another process; limit output to twelve visible tweak IDs.
+        # desktop or another process; limit output to twelve tweak IDs, retaining
+        # IsOffscreen to distinguish a missing tree from clipped/hidden content.
         try {
             $failureCatalog = Find-Id $Main 'TweakCatalog'
             if ($null -eq $failureCatalog) { return 'Catalog UIA: TweakCatalog missing.' }
             $children = $failureCatalog.FindAll([System.Windows.Automation.TreeScope]::Descendants,
                 [System.Windows.Automation.Automation]::RawViewCondition)
+            $actualIdFound = $null -ne (Find-Id $Main ("TweakState_" + $Id))
+            $summary = "Catalog UIA: IsOffscreen=$($failureCatalog.Current.IsOffscreen); childCount=$($children.Count); actualIdFound=$actualIdFound."
             $details = [System.Collections.Generic.List[string]]::new()
             foreach ($child in $children) {
                 $childId = [string] $child.Current.AutomationId
-                if (-not $child.Current.IsOffscreen -and $childId.StartsWith('Tweak', [StringComparison]::Ordinal)) {
+                if ($childId.StartsWith('Tweak', [StringComparison]::Ordinal)) {
                     $childName = ([string] $child.Current.Name).Replace("`r", ' ').Replace("`n", ' ')
                     if ($childId.Length -gt 100) { $childId = $childId.Substring(0, 100) }
                     if ($childName.Length -gt 120) { $childName = $childName.Substring(0, 120) }
-                    $details.Add("$childId='$childName'")
+                    $details.Add("$childId='$childName' (IsOffscreen=$($child.Current.IsOffscreen))")
                     if ($details.Count -ge 12) { break }
                 }
             }
-            if ($details.Count -eq 0) { return 'Catalog UIA: no visible descendants with a Tweak-prefixed AutomationId.' }
-            return 'Catalog UIA (visible, up to 12): ' + ($details -join ' | ')
+            if ($details.Count -eq 0) { return "$summary No descendants with a Tweak-prefixed AutomationId." }
+            return $summary + ' Tweak descendants (up to 12): ' + ($details -join ' | ')
         }
         catch { return 'Catalog UIA diagnostic could not be read.' }
     }
