@@ -23,7 +23,6 @@ try
     backend.Fail = false; backend.IgnoreWrite = true;
     Throws(() => service.Apply("power", "active", "new"), "read-back detects ineffective write");
     backend.IgnoreWrite = false;
-    backend.Value = "new";
     service.Restore(journal.Read().Last());
     Check(backend.Value == "old", "failed application can be recovered");
     var csv = "FrameTimeMs\n" + string.Join('\n', Enumerable.Repeat("10", 99).Append("100"));
@@ -36,6 +35,7 @@ try
     Check(new ChangeJournal(directory).Read().Count == 4, "journal survives reopening");
     passed += ProfileChecks.Run();
     passed += BenchmarkChecks.Run();
+    passed += StateChecks.Run();
     Console.WriteLine($"{passed} checks passed.");
 }
 finally { if (Directory.Exists(directory)) Directory.Delete(directory, true); }

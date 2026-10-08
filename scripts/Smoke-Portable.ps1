@@ -6,7 +6,7 @@
 
 # Saved as UTF-8 WITH BOM: Windows PowerShell 5.1 otherwise reads Cyrillic as ANSI.
 # Run on a Windows desktop: powershell.exe -NoProfile -File scripts\Smoke-Portable.ps1 -ExePath artifacts\portable-x64\Salsam.exe
-# This checks the bundled GUI and live CPU/RAM readings without changing settings.
+# This checks the GUI, live CPU/RAM, and displayed native settings without changing Windows settings.
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 $appProcess = $null
@@ -83,6 +83,62 @@ function Assert-Text {
     }
 }
 
+function Select-Section {
+    param([System.Windows.Automation.AutomationElement] $Navigation, [string] $Name)
+    $nameCondition = [System.Windows.Automation.PropertyCondition]::new(
+        [System.Windows.Automation.AutomationElement]::NameProperty, $Name)
+    $itemCondition = [System.Windows.Automation.PropertyCondition]::new(
+        [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
+        [System.Windows.Automation.ControlType]::ListItem)
+    $condition = [System.Windows.Automation.AndCondition]::new($nameCondition, $itemCondition)
+    $item = $Navigation.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $condition)
+    if ($null -eq $item) { throw "Russian sidebar item '$Name' was not found." }
+    $selection = $null
+    if (-not $item.TryGetCurrentPattern(
+        [System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $selection)) {
+        throw "'$Name' does not support SelectionItemPattern; navigation could not be exercised."
+    }
+    $selection.Select()
+}
+
+function Assert-NativeTweakState {
+    param(
+        [System.Windows.Automation.AutomationElement] $Main,
+        [System.Windows.Automation.AutomationElement] $Content,
+        [System.Windows.Automation.ValuePattern] $Search,
+        [string] $Id,
+        [string] $Query,
+        [bool] $Enabled
+    )
+    # Filtering exercises the actual user search and brings the tested row into
+    # view without selecting a tweak, queuing it, or changing a Windows setting.
+    $Search.SetValue($Query)
+    $expected = if ($Enabled) { 'Включено' } else { 'Уже выключено' }
+    $actual = ''
+    while ($clock.Elapsed.TotalSeconds -lt $deadlineSeconds) {
+        Assert-Running
+        Assert-NoErrorWindow (Get-AppWindows)
+        $catalog = Find-Id $Main 'TweakCatalog'
+        $scroll = $null
+        if ($Content.TryGetCurrentPattern(
+            [System.Windows.Automation.ScrollPattern]::Pattern, [ref] $scroll) -and
+            $scroll.Current.VerticallyScrollable) {
+            $scroll.SetScrollPercent([System.Windows.Automation.ScrollPattern]::NoScroll, 0)
+        }
+        $state = Find-Id $Main ("TweakState_" + $Id)
+        $actual = Visible-Name $state
+        if ($null -ne $catalog -and $actual -ceq $expected) {
+            Write-Output "PASS visible native setting '$Id': $actual (independent read-only Windows API)."
+            return
+        }
+        if ($actual -ceq 'Включено' -or $actual -ceq 'Уже выключено') {
+            throw "Displayed setting '$Id' disagrees with Windows. Expected '$expected'; received '$actual'."
+        }
+        Start-Sleep -Milliseconds 150
+    }
+    throw "Optimization catalog did not expose a visible native state for '$Id'. Expected '$expected'; received '$actual'. Missing, hidden, unavailable, or placeholder states fail this check."
+}
+
 try {
     if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
         throw 'This smoke check requires Windows and Windows PowerShell 5.1.'
@@ -90,6 +146,45 @@ try {
     Add-Type -AssemblyName UIAutomationClient
     Add-Type -AssemblyName UIAutomationTypes
     Add-Type -AssemblyName WindowsBase
+    # Independent probes expose GET operations only. BOOL is a 32-bit integer;
+    # SPI_GETMOUSE receives exactly three 32-bit integers. There are no SET APIs.
+    Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+
+public static class SalsamSmokeNative
+{
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", ExactSpelling = true, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ReadBoolean(uint action, uint parameter, out int value, uint flags);
+
+    [DllImport("user32.dll", EntryPoint = "SystemParametersInfoW", ExactSpelling = true, SetLastError = true)]
+    [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static extern bool ReadMouse(uint action, uint parameter,
+        [Out, MarshalAs(UnmanagedType.LPArray, SizeConst = 3)] int[] values, uint flags);
+
+    public static bool MenuAnimationEnabled()
+    {
+        int value;
+        if (!ReadBoolean(0x1002, 0, out value, 0)) // SPI_GETMENUANIMATION
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "SPI_GETMENUANIMATION failed.");
+        return value != 0;
+    }
+
+    public static bool MouseAccelerationEnabled()
+    {
+        int[] values = new int[3];
+        if (!ReadMouse(0x0003, 0, values, 0)) // SPI_GETMOUSE
+            throw new Win32Exception(Marshal.GetLastWin32Error(), "SPI_GETMOUSE failed.");
+        if (values[0] < 0 || values[1] < 0 || values[2] < 0 || values[2] > 2)
+            throw new InvalidOperationException("Windows returned an invalid mouse acceleration vector.");
+        return values[2] != 0;
+    }
+}
+'@
     $exe = (Resolve-Path -LiteralPath $ExePath).ProviderPath
     if (-not (Test-Path -LiteralPath $exe -PathType Leaf) -or [IO.Path]::GetExtension($exe) -ne '.exe') {
         throw 'ExePath must identify the actual published portable .exe.'
@@ -119,7 +214,7 @@ try {
     if ($null -eq $main) {
         throw "Portable EXE did not expose the expected main GUI through UI Automation within 25 seconds. Visible process windows: '$lastTitles'. An inaccessible desktop does not count as a pass."
     }
-    Assert-Text ([string] $main.Current.Name) 'Salsam 2.0 · Настройте Windows под себя' 'main application title'
+    Assert-Text ([string] $main.Current.Name) 'Salsam 2.1 · Настройте Windows под себя' 'main application title'
     Assert-Text (Visible-Name (Find-Id $main 'SectionTitle')) 'Обзор' 'initial Russian section heading'
     Assert-Text (Visible-Name (Find-Id $main 'ChangeQueue')) 'План изменений' 'change queue heading'
     $content = Find-Id $main 'Content'
@@ -128,20 +223,7 @@ try {
     Write-Output "PASS portable main window: $($main.Current.Name); Обзор; План изменений"
 
     $navigation = Find-Id $main 'Navigation'
-    $monitorName = [System.Windows.Automation.PropertyCondition]::new(
-        [System.Windows.Automation.AutomationElement]::NameProperty, 'Мониторинг')
-    $itemType = [System.Windows.Automation.PropertyCondition]::new(
-        [System.Windows.Automation.AutomationElement]::ControlTypeProperty,
-        [System.Windows.Automation.ControlType]::ListItem)
-    $itemCondition = [System.Windows.Automation.AndCondition]::new($monitorName, $itemType)
-    $monitorItem = $navigation.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $itemCondition)
-    if ($null -eq $monitorItem) { throw 'Russian sidebar item Мониторинг was not found.' }
-    $selection = $null
-    if (-not $monitorItem.TryGetCurrentPattern(
-        [System.Windows.Automation.SelectionItemPattern]::Pattern, [ref] $selection)) {
-        throw 'Мониторинг does not support SelectionItemPattern; navigation could not be exercised.'
-    }
-    $selection.Select()
+    Select-Section $navigation 'Мониторинг'
     $monitoringClock = [Diagnostics.Stopwatch]::StartNew()
     $cpu = ''
     $ram = ''
@@ -178,6 +260,26 @@ try {
     Assert-VisibleContentText $content 'ПРОЦЕССОР'
     Assert-VisibleContentText $content 'ОПЕРАТИВНАЯ ПАМЯТЬ'
     Write-Output "PASS sidebar SelectionItemPattern -> Мониторинг; live CPU=$cpu; RAM=$ram"
+
+    Select-Section $navigation 'Оптимизация'
+    $search = $null
+    while ($clock.Elapsed.TotalSeconds -lt $deadlineSeconds) {
+        Assert-Running
+        Assert-NoErrorWindow (Get-AppWindows)
+        $searchBox = Find-Id $main 'TweakSearch'
+        if ((Visible-Name (Find-Id $main 'SectionTitle')) -eq 'Оптимизация' -and
+            $null -ne (Find-Id $main 'TweakCatalog') -and $null -ne $searchBox -and
+            $searchBox.TryGetCurrentPattern(
+                [System.Windows.Automation.ValuePattern]::Pattern, [ref] $search)) {
+            break
+        }
+        Start-Sleep -Milliseconds 150
+    }
+    if ($null -eq $search) { throw 'Оптимизация did not expose its searchable TweakCatalog.' }
+    Assert-Text (Visible-Name (Find-Id $main 'SectionTitle')) 'Оптимизация' 'optimization section heading'
+    Assert-NativeTweakState $main $content $search 'menu-animation' 'Анимация меню' ([SalsamSmokeNative]::MenuAnimationEnabled())
+    Assert-NativeTweakState $main $content $search 'mouse-acceleration' 'Ускорение указателя мыши' ([SalsamSmokeNative]::MouseAccelerationEnabled())
+    $search.SetValue('')
 
     # Optional review artifact. A capture problem never substitutes for GUI checks.
     if ($clock.Elapsed.TotalSeconds -lt 50) {

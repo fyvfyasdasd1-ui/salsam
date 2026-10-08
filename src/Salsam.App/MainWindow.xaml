@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:Salsam.App"
-        Title="Salsam 2.0 · Настройте Windows под себя" Width="1400" Height="900"
+        Title="Salsam 2.1 · Настройте Windows под себя" Width="1400" Height="900"
         MinWidth="1050" MinHeight="650" Background="#0D1220" Foreground="#EDF0FA"
         FontFamily="Segoe UI" FontSize="13" WindowStartupLocation="CenterScreen"
         UseLayoutRounding="True" SnapsToDevicePixels="True">
@@ -52,7 +52,7 @@
             </Border>
             <TextBlock Text="salsam" FontWeight="Bold" FontSize="25" VerticalAlignment="Center"/>
           </StackPanel>
-          <StackPanel Orientation="Horizontal" Margin="0,13,0,0"><TextBlock Text="WINDOWS OPTIMIZER" FontSize="8" Foreground="#74809F" VerticalAlignment="Center"/><Border Background="#252039" CornerRadius="4" Padding="6,2" Margin="8,0,0,0"><TextBlock Text="2.0" FontSize="9" Foreground="#B69DFA"/></Border></StackPanel>
+          <StackPanel Orientation="Horizontal" Margin="0,13,0,0"><TextBlock Text="WINDOWS OPTIMIZER" FontSize="8" Foreground="#74809F" VerticalAlignment="Center"/><Border Background="#252039" CornerRadius="4" Padding="6,2" Margin="8,0,0,0"><TextBlock Text="2.1" FontSize="9" Foreground="#B69DFA"/></Border></StackPanel>
         </StackPanel>
         <Border DockPanel.Dock="Bottom" Background="#161E30" BorderBrush="#29344A" BorderThickness="1" CornerRadius="12" Padding="13" Margin="0,20,0,0">
           <StackPanel><TextBlock Text="Настройки под контролем" FontWeight="SemiBold" FontSize="11" Foreground="#71DAC5" Margin="0,0,0,6"/><TextBlock Text="Предпросмотр, журнал и отдельный откат каждого изменения." Style="{StaticResource Caption}" FontSize="10" LineHeight="16"/></StackPanel>
@@ -103,7 +103,7 @@
               <Border Grid.Column="2" Style="{StaticResource Card}" Padding="14" Margin="0"><StackPanel><TextBlock Text="&#xE713;" FontFamily="Segoe MDL2 Assets" FontSize="21" Foreground="#90ADEA" Margin="0,0,0,13"/><TextBlock Text="Свой профиль" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,10"/><TextBlock Text="Выберите настройки в каталоге и сохраните свою очередь." Style="{StaticResource Caption}" FontSize="11"/><Button Content="Настроить" Command="{Binding CustomCommand}" Margin="0,17,0,0"/></StackPanel></Border>
             </Grid>
             <TextBlock Text="* Используется существующая схема Windows. На ноутбуке учитывайте расход батареи и нагрев. Профили не гарантируют прирост FPS. Любое действие можно исключить в очереди." Style="{StaticResource Caption}" Margin="0,0,0,18"/>
-            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Сохранить свою конфигурацию" Style="{StaticResource CardTitle}"/><TextBlock Text="Сохраняются выбранные настройки интерфейса и питания из очереди. Загрузка профиля показывает изменения для проверки перед применением." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
+            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Сохранить свою конфигурацию" Style="{StaticResource CardTitle}"/><TextBlock Text="Сохраняются выбранные настройки интерфейса, ввода, Проводника и питания из очереди. Загрузка профиля показывает изменения для проверки перед применением." Style="{StaticResource Caption}" Margin="0,0,0,14"/>
               <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBox Text="{Binding ProfileName, UpdateSourceTrigger=PropertyChanged}" ToolTip="Название вашего профиля" AutomationProperties.Name="Название профиля"/><Button Grid.Column="1" Content="Сохранить" Command="{Binding SaveProfileCommand}" Margin="9,0,0,0"/><Button Grid.Column="2" Content="Загрузить" Command="{Binding LoadProfileCommand}" Style="{StaticResource QuietButton}" Margin="9,0,0,0"/></Grid>
               <TextBlock Text="{Binding ProfileStatus}" Style="{StaticResource Caption}" Foreground="#A995DB" Margin="0,11,0,0"/>
             </StackPanel></Border>
@@ -112,29 +112,67 @@
 
           <!-- Only the optimization page contains the searchable setting catalog. -->
           <StackPanel Visibility="{Binding Section, Converter={StaticResource SectionVisibility}, ConverterParameter=Оптимизация}">
-            <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Выбирайте осознанно" Style="{StaticResource CardTitle}"/><TextBlock Text="Отметьте нужные настройки и добавьте их в очередь. Для каждого изменения указаны эффект, компромиссы и исходное состояние. Применение — после отдельного подтверждения." Style="{StaticResource Body}"/></StackPanel></Border>
-            <Grid Margin="0,0,0,16"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="170"/></Grid.ColumnDefinitions>
-              <TextBox Text="{Binding Search, UpdateSourceTrigger=PropertyChanged}" ToolTip="Поиск по названию, описанию и состоянию" AutomationProperties.Name="Поиск настроек" Padding="34,11,12,11"/>
-              <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#7483A6" FontSize="14" Margin="12,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
-              <ComboBox Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" Margin="10,0,0,0" ToolTip="Категория настроек" AutomationProperties.Name="Категория настроек"/>
+            <Border Style="{StaticResource Card}" Background="#142037" BorderBrush="#2B4566" Padding="16" Margin="0,0,0,13">
+              <StackPanel>
+                <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                  <TextBlock Text="Твики Windows" FontSize="18" FontWeight="SemiBold"/>
+                  <Border Grid.Column="1" Background="#1F3656" CornerRadius="6" Padding="9,5"><TextBlock Text="{Binding OptimizationCount, StringFormat={}{0} настроек}" FontSize="10" Foreground="#AFCFF3" AutomationProperties.AutomationId="TweakTotal"/></Border>
+                </Grid>
+                <TextBlock Text="Раскройте строку, чтобы узнать эффект и ограничения. Состояния считываются из Windows; уже совпавшие значения повторно выбирать не нужно." FontSize="11" Foreground="#98AFCE" LineHeight="18" Margin="0,8,0,0"/>
+              </StackPanel>
+            </Border>
+            <WrapPanel Margin="0,0,0,8">
+              <Button Content="Рекомендованные" Command="{Binding OptimalTweaksCommand}" Style="{StaticResource TweakPrimaryButton}" Margin="0,0,8,6"/>
+              <Button Content="Профиль «Игры»" Command="{Binding GamingCommand}" Style="{StaticResource TweakButton}" Margin="0,0,8,6"/>
+              <Button Content="Обновить состояния" Command="{Binding RefreshCommand}" Style="{StaticResource QuietButton}" Padding="12,9" FontSize="11" Margin="0,0,0,6"/>
+            </WrapPanel>
+            <Grid Margin="0,0,0,11"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="160"/></Grid.ColumnDefinitions>
+              <TextBox Text="{Binding Search, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" ToolTip="Поиск по названию, описанию и состоянию" AutomationProperties.Name="Поиск настроек" AutomationProperties.AutomationId="TweakSearch" Padding="34,10,12,10"/>
+              <TextBlock Text="&#xE721;" FontFamily="Segoe MDL2 Assets" Foreground="#748FB1" FontSize="13" Margin="12,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Left" IsHitTestVisible="False"/>
+              <TextBlock Text="Поиск твиков…" FontSize="12" Foreground="#637994" Margin="34,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False"><TextBlock.Style><Style TargetType="TextBlock"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding Search}" Value=""><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></TextBlock.Style></TextBlock>
+              <ComboBox Grid.Column="1" ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" Margin="9,0,0,0" ToolTip="Категория настроек" AutomationProperties.Name="Категория настроек" AutomationProperties.AutomationId="TweakCategory"/>
             </Grid>
-            <ItemsControl ItemsSource="{Binding FilteredOptimizations}">
+            <Grid Margin="0,0,0,12"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+              <WrapPanel VerticalAlignment="Center" Margin="0,0,10,0">
+                <TextBlock Text="{Binding FilteredCount, StringFormat=Показано: {0}}" FontSize="10" Foreground="#8DA6C5" Margin="0,0,14,0" AutomationProperties.AutomationId="TweakShown"/>
+                <TextBlock Text="{Binding AlreadyConfiguredCount, StringFormat=Уже настроено: {0}}" FontSize="10" Foreground="#76C7B2" AutomationProperties.AutomationId="TweakConfigured"/>
+              </WrapPanel>
+              <Button Grid.Column="1" Content="Выбранные → в очередь" Command="{Binding QueueSelectedCommand}" Style="{StaticResource TweakPrimaryButton}" Padding="11,8"/>
+            </Grid>
+            <Border Background="#152137" BorderBrush="#293D5A" BorderThickness="1" CornerRadius="9" Padding="20" Margin="0,0,0,12"><Border.Style><Style TargetType="Border"><Setter Property="Visibility" Value="Collapsed"/><Style.Triggers><DataTrigger Binding="{Binding FilteredCount}" Value="0"><Setter Property="Visibility" Value="Visible"/></DataTrigger></Style.Triggers></Style></Border.Style><TextBlock Text="Совпадений не найдено. Измените поиск или выберите другую категорию." FontSize="12" Foreground="#8FA8C9"/></Border>
+            <ItemsControl ItemsSource="{Binding FilteredOptimizations}" AutomationProperties.AutomationId="TweakCatalog">
               <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><DataTrigger Binding="{Binding Busy}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></ItemsControl.Style>
               <ItemsControl.ItemTemplate><DataTemplate>
-              <Border><Border.Style><Style TargetType="Border" BasedOn="{StaticResource Card}"><Style.Triggers><DataTrigger Binding="{Binding IsAvailable}" Value="False"><Setter Property="Opacity" Value="0.68"/></DataTrigger></Style.Triggers></Style></Border.Style>
-                <StackPanel>
-                  <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding IsAvailable}" VerticalAlignment="Center"><TextBlock Text="{Binding Title}" FontSize="16" FontWeight="SemiBold"/></CheckBox>
-                    <Border Grid.Column="1" Style="{StaticResource Tag}" Margin="12,0,0,0" VerticalAlignment="Center"><TextBlock Text="{Binding Category}" FontSize="9" Foreground="#BCA9E9"/></Border>
+                <Border Style="{StaticResource TweakRow}">
+                  <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="39"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect, Mode=OneWay}" Style="{StaticResource TweakCheckBox}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,18,0,0" ToolTip="Выбрать целевое значение" AutomationProperties.Name="{Binding Title}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakSelect_{0}'}"/>
+                    <Expander Grid.Column="1" Style="{StaticResource TweakExpander}" AutomationProperties.Name="{Binding Title}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakRow_{0}'}">
+                      <Expander.Header>
+                        <Grid MinHeight="31"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                          <StackPanel VerticalAlignment="Center" Margin="0,0,8,0"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Foreground="#CCD9EB"/><TextBlock Text="{Binding Category}" FontSize="9" Foreground="#677F9F" Margin="0,3,0,0"/></StackPanel>
+                          <Border Grid.Column="1" Style="{StaticResource TweakStateBadge}" VerticalAlignment="Center" Margin="0,0,7,0"><TextBlock Text="{Binding State}" Style="{StaticResource TweakStateText}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakState_{0}'}"/></Border>
+                          <Border Grid.Column="2" Background="#15263D" BorderBrush="#2D4564" BorderThickness="1" CornerRadius="5" Padding="7,5" VerticalAlignment="Center"><TextBlock Text="{Binding DesiredLabel}" FontSize="9" Foreground="#829FC4" MaxWidth="87" TextAlignment="Center" ToolTip="Целевое значение после применения"/></Border>
+                        </Grid>
+                      </Expander.Header>
+                      <StackPanel>
+                        <TextBlock Text="{Binding Description}" FontSize="12" Foreground="#A9BCD6" LineHeight="20"/>
+                        <Grid Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                          <StackPanel Margin="0,0,16,0"><TextBlock Text="ОЖИДАЕМЫЙ ЭФФЕКТ" FontSize="9" FontWeight="SemiBold" Foreground="#5B899B" Margin="0,0,0,5"/><TextBlock Text="{Binding Effect}" FontSize="11" LineHeight="18" Foreground="#79CBB8"/></StackPanel>
+                          <StackPanel><TextBlock Text="ЧТО УЧЕСТЬ" FontSize="9" FontWeight="SemiBold" Foreground="#9B805D" Margin="0,0,0,5"/><TextBlock Text="{Binding Tradeoff}" FontSize="11" LineHeight="18" Foreground="#C4AA88"/></StackPanel>
+                        </Grid>
+                        <Border Background="#0D1728" CornerRadius="6" Padding="10" Margin="0,14,0,0"><StackPanel><TextBlock Text="ТЕКУЩЕЕ И ЦЕЛЕВОЕ ЗНАЧЕНИЕ" FontSize="9" Foreground="#607C9F" Margin="0,0,0,5"/><TextBlock Text="{Binding ValueDetails}" FontSize="11" Foreground="#A9BEDA"/><TextBlock Text="{Binding Restart}" FontSize="10" Foreground="#6E87A7" Margin="0,6,0,0"/></StackPanel></Border>
+                        <TextBlock Text="Повторное применение не требуется: выбранное значение уже установлено в Windows." Visibility="{Binding IsAlreadyConfigured, Converter={StaticResource BoolVisibility}}" FontSize="11" Foreground="#7CD5BB" LineHeight="18" Margin="0,12,0,0"/>
+                        <WrapPanel Visibility="{Binding CanToggle, Converter={StaticResource BoolVisibility}}" Margin="0,13,0,0">
+                          <Button Content="Включить → в очередь" Command="{Binding QueueEnableCommand}" Style="{StaticResource TweakButton}" Margin="0,0,8,6"/>
+                          <Button Content="Выключить → в очередь" Command="{Binding QueueDisableCommand}" Style="{StaticResource TweakButton}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                      </StackPanel>
+                    </Expander>
                   </Grid>
-                  <TextBlock Text="{Binding Description}" Style="{StaticResource Body}" Margin="0,13,0,0"/>
-                  <TextBlock Text="ОЖИДАЕМЫЙ ЭФФЕКТ" Style="{StaticResource DetailLabel}"/><TextBlock Text="{Binding Effect}" Foreground="#69D8C2" FontSize="12" LineHeight="19"/>
-                  <TextBlock Text="ЧТО УЧЕСТЬ" Style="{StaticResource DetailLabel}"/><TextBlock Text="{Binding Tradeoff}" Foreground="#CCAD83" FontSize="12" LineHeight="19"/>
-                  <Border Background="#101626" CornerRadius="8" Padding="12" Margin="0,15,0,0"><StackPanel><TextBlock Text="{Binding State}" FontSize="12" Foreground="#AAB8D3"/><TextBlock Text="{Binding Restart}" Style="{StaticResource Caption}" FontSize="10" Margin="0,5,0,0"/></StackPanel></Border>
-                </StackPanel>
-              </Border>
-            </DataTemplate></ItemsControl.ItemTemplate></ItemsControl>
-            <Button Content="Выбранные настройки → в очередь" Command="{Binding QueueSelectedCommand}" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Margin="0,0,0,22"/>
+                </Border>
+              </DataTemplate></ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Style="{StaticResource Card}" Background="#111E31" BorderBrush="#29405D" Padding="15" Margin="0,10,0,16"><StackPanel><TextBlock Text="Возврат к исходным значениям" FontSize="13" FontWeight="SemiBold" Foreground="#B5C9E4"/><TextBlock Text="Используются исходные значения из журнала Salsam. Перед восстановлением появится подтверждение." FontSize="11" Foreground="#7E9ABA" LineHeight="18" Margin="0,7,0,11"/><Button Content="Восстановить исходные значения" Command="{Binding DefaultTweaksCommand}" Style="{StaticResource TweakButton}" HorizontalAlignment="Left"/></StackPanel></Border>
             <Border Style="{StaticResource Card}"><StackPanel><TextBlock Text="Выбрать схему питания" Style="{StaticResource CardTitle}"/><TextBlock Text="{Binding ActivePower}" Foreground="#BCA9F5" FontWeight="SemiBold" Margin="0,0,0,12"/>
               <ComboBox ItemsSource="{Binding Plans}" SelectedItem="{Binding SelectedPlan, Mode=TwoWay}" ToolTip="Существующие схемы питания Windows" AutomationProperties.Name="Схема питания"/>
               <TextBlock Text="Меняется политика энергопотребления Windows. Более агрессивная схема может повысить температуру, шум и расход батареи. Автоматический контроль температуры не реализован. Перезагрузка не нужна." Style="{StaticResource Caption}" Margin="0,13,0,15"/>
@@ -232,7 +270,7 @@
       <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="Auto"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <Ellipse Width="6" Height="6" Margin="0,0,10,0" VerticalAlignment="Center"><Ellipse.Style><Style TargetType="Ellipse"><Setter Property="Fill" Value="#69CFB8"/><Style.Triggers><DataTrigger Binding="{Binding Busy}" Value="True"><Setter Property="Fill" Value="#B49AF9"/></DataTrigger></Style.Triggers></Style></Ellipse.Style></Ellipse>
         <TextBlock Grid.Column="1" Text="{Binding Status}" FontSize="10" Foreground="#9EABC4" VerticalAlignment="Center" MaxHeight="38"/>
-        <TextBlock Grid.Column="2" Text="SALSAM 2.0" FontSize="9" Foreground="#596C8B" VerticalAlignment="Center" Margin="18,0,0,0"/>
+        <TextBlock Grid.Column="2" Text="SALSAM 2.1" FontSize="9" Foreground="#596C8B" VerticalAlignment="Center" Margin="18,0,0,0"/>
       </Grid>
     </Border>
   </Grid>

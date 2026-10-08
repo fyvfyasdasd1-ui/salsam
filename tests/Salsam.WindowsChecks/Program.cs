@@ -31,6 +31,10 @@ try
     var sample = monitor.Sample();
     Check(sample.Cpu is >= 0 and <= 100 && sample.TotalGb > 0, "CPU and RAM native counters");
     VisualChecks.Run();
+    InputChecks.Run();
+    ShellChecks.Run();
+    PowerChecks.Run();
+    QueueStateChecks.Run();
     PerformanceChecks.Run();
     Console.WriteLine("Windows integration checks completed (optional counters report availability separately).");
 }

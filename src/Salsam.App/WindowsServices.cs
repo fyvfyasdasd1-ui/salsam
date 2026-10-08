@@ -20,7 +20,7 @@ public record TempEntry(string Path, long Bytes, DateTime Modified)
 }
 public record RegistryValue(string Text, int Kind);
 
-public sealed class WindowsBackend : ISettingBackend
+public sealed class WindowsBackend : ISettingBackend, ISettingValueComparer
 {
     [DllImport("kernel32.dll")] private static extern uint GetOEMCP();
     public const string RunKey = @"Software\Microsoft\Windows\CurrentVersion\Run";
@@ -52,6 +52,9 @@ public sealed class WindowsBackend : ISettingBackend
     public string Read(string kind, string target)
     {
         if (kind == "visual") return VisualEffectsService.Read(target);
+        if (kind == "input") return InputSettingsService.Read(target);
+        if (kind == "shell") return ShellSettingsService.Read(target);
+        if (kind == "power-value") return PowerSettingsService.Read(target);
         if (kind == "power")
         {
             var value = Regex.Match(Run("powercfg.exe", "/getactivescheme"), @"[a-fA-F0-9-]{36}").Value;
@@ -82,6 +85,9 @@ public sealed class WindowsBackend : ISettingBackend
     public void Write(string kind, string target, string value)
     {
         if (kind == "visual") { VisualEffectsService.Write(target, value); return; }
+        if (kind == "input") { InputSettingsService.Write(target, value); return; }
+        if (kind == "shell") { ShellSettingsService.Write(target, value); return; }
+        if (kind == "power-value") { PowerSettingsService.Write(target, value); return; }
         if (kind == "power")
         {
             if (!Guid.TryParse(value, out _) || !Plans().Any(p => p.Id == value)) throw new InvalidOperationException("Схема питания недоступна.");
@@ -111,6 +117,8 @@ public sealed class WindowsBackend : ISettingBackend
         }
         throw new NotSupportedException(kind);
     }
+    public bool Matches(string kind, string target, string actual, string desired) =>
+        TweakStates.Equivalent(kind, target, actual, desired);
     public static List<StartupEntry> Startup()
     {
         using var key = Registry.CurrentUser.OpenSubKey(RunKey);
