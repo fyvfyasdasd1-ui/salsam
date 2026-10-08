@@ -110,6 +110,30 @@ function Assert-NativeTweakState {
         [string] $Query,
         [bool] $Enabled
     )
+    function Get-FailureCatalogDiagnostic {
+        # Called only on failure. Inspect this application's catalog, never the
+        # desktop or another process; limit output to twelve visible tweak IDs.
+        try {
+            $failureCatalog = Find-Id $Main 'TweakCatalog'
+            if ($null -eq $failureCatalog) { return 'Catalog UIA: TweakCatalog missing.' }
+            $children = $failureCatalog.FindAll([System.Windows.Automation.TreeScope]::Descendants,
+                [System.Windows.Automation.Automation]::RawViewCondition)
+            $details = [System.Collections.Generic.List[string]]::new()
+            foreach ($child in $children) {
+                $childId = [string] $child.Current.AutomationId
+                if (-not $child.Current.IsOffscreen -and $childId.StartsWith('Tweak', [StringComparison]::Ordinal)) {
+                    $childName = ([string] $child.Current.Name).Replace("`r", ' ').Replace("`n", ' ')
+                    if ($childId.Length -gt 100) { $childId = $childId.Substring(0, 100) }
+                    if ($childName.Length -gt 120) { $childName = $childName.Substring(0, 120) }
+                    $details.Add("$childId='$childName'")
+                    if ($details.Count -ge 12) { break }
+                }
+            }
+            if ($details.Count -eq 0) { return 'Catalog UIA: no visible descendants with a Tweak-prefixed AutomationId.' }
+            return 'Catalog UIA (visible, up to 12): ' + ($details -join ' | ')
+        }
+        catch { return 'Catalog UIA diagnostic could not be read.' }
+    }
     # Filtering exercises the actual user search and brings the tested row into
     # view without selecting a tweak, queuing it, or changing a Windows setting.
     $Search.SetValue($Query)
@@ -132,11 +156,11 @@ function Assert-NativeTweakState {
             return
         }
         if ($actual -ceq 'Включено' -or $actual -ceq 'Уже выключено') {
-            throw "Displayed setting '$Id' disagrees with Windows. Expected '$expected'; received '$actual'."
+            throw "Displayed setting '$Id' disagrees with Windows. Expected '$expected'; received '$actual'. $(Get-FailureCatalogDiagnostic)"
         }
         Start-Sleep -Milliseconds 150
     }
-    throw "Optimization catalog did not expose a visible native state for '$Id'. Expected '$expected'; received '$actual'. Missing, hidden, unavailable, or placeholder states fail this check."
+    throw "Optimization catalog did not expose a visible native state for '$Id'. Expected '$expected'; received '$actual'. Missing, hidden, unavailable, or placeholder states fail this check. $(Get-FailureCatalogDiagnostic)"
 }
 
 try {

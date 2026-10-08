@@ -144,14 +144,12 @@
               <ItemsControl.Style><Style TargetType="ItemsControl"><Style.Triggers><DataTrigger Binding="{Binding Busy}" Value="True"><Setter Property="IsEnabled" Value="False"/></DataTrigger></Style.Triggers></Style></ItemsControl.Style>
               <ItemsControl.ItemTemplate><DataTemplate>
                 <Border Style="{StaticResource TweakRow}">
-                  <Grid><Grid.ColumnDefinitions><ColumnDefinition Width="39"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                  <Grid Grid.IsSharedSizeScope="True"><Grid.ColumnDefinitions><ColumnDefinition Width="39"/><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="TweakStatus"/><ColumnDefinition Width="Auto" SharedSizeGroup="TweakGoal"/><ColumnDefinition Width="42"/></Grid.ColumnDefinitions>
                     <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" IsEnabled="{Binding CanSelect, Mode=OneWay}" Style="{StaticResource TweakCheckBox}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,18,0,0" ToolTip="Выбрать целевое значение" AutomationProperties.Name="{Binding Title}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakSelect_{0}'}"/>
-                    <Expander Grid.Column="1" Style="{StaticResource TweakExpander}" AutomationProperties.Name="{Binding Title}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakRow_{0}'}">
+                    <Expander Grid.Column="1" Grid.ColumnSpan="4" Style="{StaticResource TweakExpander}" AutomationProperties.Name="{Binding Title}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakRow_{0}'}">
                       <Expander.Header>
-                        <Grid MinHeight="31"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                        <Grid MinHeight="31"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto" SharedSizeGroup="TweakStatus"/><ColumnDefinition Width="Auto" SharedSizeGroup="TweakGoal"/></Grid.ColumnDefinitions>
                           <StackPanel VerticalAlignment="Center" Margin="0,0,8,0"><TextBlock Text="{Binding Title}" FontSize="12" FontWeight="SemiBold" Foreground="#CCD9EB"/><TextBlock Text="{Binding Category}" FontSize="9" Foreground="#677F9F" Margin="0,3,0,0"/></StackPanel>
-                          <Border Grid.Column="1" Style="{StaticResource TweakStateBadge}" VerticalAlignment="Center" Margin="0,0,7,0"><TextBlock Text="{Binding State}" Style="{StaticResource TweakStateText}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakState_{0}'}"/></Border>
-                          <Border Grid.Column="2" Background="#15263D" BorderBrush="#2D4564" BorderThickness="1" CornerRadius="5" Padding="7,5" VerticalAlignment="Center"><TextBlock Text="{Binding DesiredLabel}" FontSize="9" Foreground="#829FC4" MaxWidth="87" TextAlignment="Center" ToolTip="Целевое значение после применения"/></Border>
                         </Grid>
                       </Expander.Header>
                       <StackPanel>
@@ -168,6 +166,9 @@
                         </WrapPanel>
                       </StackPanel>
                     </Expander>
+                    <!-- Keep observable status outside the header button so UI Automation exposes its TextBlock. -->
+                    <Border Grid.Column="2" Style="{StaticResource TweakStateBadge}" VerticalAlignment="Top" Margin="0,12,7,0"><TextBlock Text="{Binding State}" Style="{StaticResource TweakStateText}" AutomationProperties.AutomationId="{Binding Id, StringFormat='TweakState_{0}'}"/></Border>
+                    <Border Grid.Column="3" Background="#15263D" BorderBrush="#2D4564" BorderThickness="1" CornerRadius="5" Padding="7,5" VerticalAlignment="Top" Margin="0,12,0,0"><TextBlock Text="{Binding DesiredLabel}" FontSize="9" Foreground="#829FC4" MaxWidth="87" TextAlignment="Center" ToolTip="Целевое значение после применения"/></Border>
                   </Grid>
                 </Border>
               </DataTemplate></ItemsControl.ItemTemplate>
